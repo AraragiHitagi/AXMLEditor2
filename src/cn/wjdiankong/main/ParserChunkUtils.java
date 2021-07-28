@@ -35,7 +35,7 @@ public class ParserChunkUtils {
 		xmlStruct.clear();
 	}
 	
-	public static void parserXml(){
+	public static void parserXml() throws java.io.UnsupportedEncodingException{
 		clear();
 		ParserChunkUtils.parserXmlHeader(xmlStruct.byteSrc);
 		ParserChunkUtils.parserStringChunk(xmlStruct.byteSrc);
@@ -58,7 +58,7 @@ public class ParserChunkUtils {
 	 * Ω‚ŒˆStringChunk
 	 * @param byteSrc
 	 */
-	public static void parserStringChunk(byte[] byteSrc){
+	public static void parserStringChunk(byte[] byteSrc) throws java.io.UnsupportedEncodingException{
 		xmlStruct.stringChunk = StringChunk.createChunk(byteSrc, stringChunkOffset);
 		byte[] chunkSizeByte = Utils.copyByte(byteSrc, 12, 4);
 		resourceChunkOffset = stringChunkOffset + Utils.byte2int(chunkSizeByte);

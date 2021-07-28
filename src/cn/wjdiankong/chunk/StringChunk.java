@@ -1,5 +1,6 @@
 package cn.wjdiankong.chunk;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import cn.wjdiankong.main.Utils;
@@ -20,7 +21,7 @@ public class StringChunk {
 
 	public ArrayList<String> stringContentList;
 	
-	public byte[] getByte(ArrayList<String> strList){
+	public byte[] getByte(ArrayList<String> strList) throws UnsupportedEncodingException {
 		
 		byte[] strB = getStrListByte(strList);
 		
@@ -35,12 +36,12 @@ public class StringChunk {
 		src = Utils.addByte(src, stylePoolOffset);
 		
 		byte[] strOffsets = new byte[0];
-		ArrayList<String> convertList = convertStrList(strList);
+		ArrayList<byte[]> convertList = convertStrList(strList);
 		
 		int len = 0;
 		for(int i=0;i<convertList.size();i++){
 			strOffsets = Utils.addByte(strOffsets, Utils.int2Byte(len));
-			len += (convertList.get(i).length()+4);//这里的4包括字符串头部的字符串长度2个字节，和字符串结尾的2个字节
+			len += (convertList.get(i).length+4);//这里的4包括字符串头部的字符串长度2个字节，和字符串结尾的2个字节
 		}
 		
 		src = Utils.addByte(src, strOffsets);//写入string offsets值
@@ -81,7 +82,7 @@ public class StringChunk {
 				strOffsets.length+styleOffsets.length+strPool.length+stylePool.length;
 	}
 	
-	public static StringChunk createChunk(byte[] byteSrc, int stringChunkOffset){
+	public static StringChunk createChunk(byte[] byteSrc, int stringChunkOffset) throws java.io.UnsupportedEncodingException{
 
 		StringChunk chunk = new StringChunk();
 
@@ -118,73 +119,52 @@ public class StringChunk {
 		//Style Offsets
 		chunk.styleOffsets = Utils.copyByte(byteSrc, 28+stringChunkOffset+4*chunkStringCount, 4*chunkStyleCount);
 		
-		int stringContentStart = 8 + Utils.byte2int(chunk.strPoolOffset);
+		int stringContentStart = stringChunkOffset + Utils.byte2int(chunk.strPoolOffset);
 
 		//String Content
-		byte[] chunkStringContentByte = Utils.copyByte(byteSrc, stringContentStart, chunkSize);
+		int contentLen =  chunkSize - Utils.byte2int(chunk.strPoolOffset);
+		byte[] chunkStringContentByte = Utils.copyByte(byteSrc, stringContentStart, contentLen);
 
 		/**
 		 * 在解析字符串的时候有个问题，就是编码：UTF-8和UTF-16,如果是UTF-8的话是以00结尾的，如果是UTF-16的话以00 00结尾的
 		 */
 		//这里的格式是：偏移值开始的两个字节是字符串的长度，接着是字符串的内容，后面跟着两个字符串的结束符00
-		byte[] firstStringSizeByte = Utils.copyByte(chunkStringContentByte, 0, 2);
-		//一个字符对应两个字节
-		int firstStringSize = Utils.byte2Short(firstStringSizeByte)*2;
-		byte[] firstStringContentByte = Utils.copyByte(chunkStringContentByte, 2, firstStringSize+2);
-		
-		String firstStringContent = new String(firstStringContentByte);
-		
-		chunk.stringContentList.add(Utils.filterStringNull(firstStringContent));
 		//将字符串都放到ArrayList中
-		int endStringIndex = 2+firstStringSize+2;
+		int endStringIndex = 0;
 		while(chunk.stringContentList.size() < chunkStringCount){
 			//一个字符对应两个字节，所以要乘以2
 			int stringSize = Utils.byte2Short(Utils.copyByte(chunkStringContentByte, endStringIndex, 2))*2;
-			byte[] temp = Utils.copyByte(chunkStringContentByte, endStringIndex+2, stringSize+2);
-			String str = new String(temp);
-			chunk.stringContentList.add(Utils.filterStringNull(str));
+			byte[] temp = (stringSize > 0)? Utils.copyByte(chunkStringContentByte, endStringIndex+2, stringSize): new byte[0];
+			String str = new String(temp, "UTF-16LE");
+			chunk.stringContentList.add(str);
 			endStringIndex += (2+stringSize+2);
 		}
 		
-		int len = 0;
-		for(String str : chunk.stringContentList){
-			len += 2;
-			len += str.length()*2;
-			len += 2;
-		}
-		chunk.strPool = Utils.copyByte(byteSrc, stringContentStart, len);
-		int stylePool = stringContentStart + len;
-		
-		chunk.stylePool = Utils.copyByte(byteSrc, stylePool, chunkSize-(stylePool));
-		
+		chunk.strPool = Utils.copyByte(chunkStringContentByte, 0, endStringIndex);
+		chunk.stylePool = Utils.copyByte(chunkStringContentByte, endStringIndex, contentLen - endStringIndex);
 		return chunk;
 	}
 	
-	private byte[] getStrListByte(ArrayList<String> strList){
+	private byte[] getStrListByte(ArrayList<String> strList) throws java.io.UnsupportedEncodingException{
 		byte[] src = new byte[0];
-		ArrayList<String> stringContentList = convertStrList(strList);
-		for(int i=0;i<stringContentList.size();i++){
+		ArrayList<byte[]> stringContentListInBytes = convertStrList(strList);
+		for(int i=0;i<stringContentListInBytes.size();i++){
 			byte[] tempAry = new byte[0];
-			short len = (short)(stringContentList.get(i).length()/2);
+			short len = (short)(stringContentListInBytes.get(i).length/2);
 			byte[] lenAry = Utils.shortToByte(len);
 			tempAry = Utils.addByte(tempAry, lenAry);
-			tempAry = Utils.addByte(tempAry, stringContentList.get(i).getBytes());
+			tempAry = Utils.addByte(tempAry, stringContentListInBytes.get(i));
 			tempAry = Utils.addByte(tempAry, new byte[]{0,0});
 			src = Utils.addByte(src, tempAry);
 		}
 		return src;
 	}
 	
-	private ArrayList<String> convertStrList(ArrayList<String> stringContentList){
-		ArrayList<String> destList = new ArrayList<String>(stringContentList.size());
+	private ArrayList<byte[]> convertStrList(ArrayList<String> stringContentList) throws java.io.UnsupportedEncodingException{
+		ArrayList<byte[]> destList = new ArrayList<>(stringContentList.size());
 		for(String str : stringContentList){
-			byte[] temp = str.getBytes();
-			byte[] src = new byte[temp.length*2];
-			for(int i=0;i<temp.length;i++){
-				src[i*2] = temp[i];
-				src[i*2+1] = 0;
-			}
-			destList.add(new String(src));
+			byte[] temp = str.getBytes("UTF-16LE");
+			destList.add(temp);
 		}
 		return destList;
 	}

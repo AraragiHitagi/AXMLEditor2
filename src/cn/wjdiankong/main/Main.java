@@ -8,7 +8,18 @@ import java.io.IOException;
 
 public class Main {
 	
-	private final static String CMD_TXT = "[usage java -jar AXMLEditor.jar [-tag|-attr] [-i|-r|-m] [标签名|标签唯一ID|属性名|属性值] [输入文件|输出文件]";
+	private final static String CMD_TXT = "[usage java -jar AXMLEditor2.jar [-tag|-attr] [-i|-r|-m] [标签名|标签唯一ID|属性名|属性值] [输入文件|输出文件]" +
+											"\n举例说明：" +
+											"\n  1>插入属性：application的标签中插入android:debuggable=\"true\"属性，让程序处于可调式状态" +
+											"\n    java -jar AXMLEditor2.jar -attr -i application package debuggable true AndroidManifest.xml AndroidManifest_out.xml" +
+											"\n  2>删除属性：application标签中删除allowBackup属性，这样此app就可以进行沙盒数据备份" +
+											"\n    java -jar AXMLEditor2.jar -attr -r application allowBackup AndroidManifest.xml AndroidManifest_out.xml" +
+											"\n  3>更改属性：application的标签中修改android:debuggable=\"true\"属性，让程序处于可调式状态" +
+											"\n    java -jar AXMLEditor2.jar -attr -m application package debuggable true AndroidManifest.xml AndroidManifest_out.xml" +
+											"\n  4>插入标签：因为插入标签时一个标签内容比较多，所以命令方式不方便，而是输入一个需要插入标签内容的xml文件即可。" +
+											"\n    java -jar AXMLEditor2.jar -tag -i [insert.xml] AndroidManifest.xml AndroidManifest_out.xml" +
+											"\n  5>删除标签：删除android:name=\"cn.wjdiankong.demo.MainActivity\"的标签内容" +
+											"\n    java -jar AXMLEditor2.jar -tag -r activity cn.wjdiankong.demo.MainActivity AndroidManifest.xml AndroidManifest_out.xml";
 
 	public static void main(String[] args){
 

@@ -28,62 +28,66 @@ public class XmlEditor {
 	public static String prefixStr = "http://schemas.android.com/apk/res/android";
 	
 	/**
-	 * É¾³ý±êÇ©ÄÚÈÝ
+	 * É¾ï¿½ï¿½ï¿½ï¿½Ç©ï¿½ï¿½ï¿½ï¿½
 	 * @param tagName
 	 * @param name
 	 */
 	public static void removeTag(String tagName, String name){
-		ParserChunkUtils.parserXml();
-		for(TagChunk tag : ParserChunkUtils.xmlStruct.tagChunkList){
-			int tagNameIndex = Utils.byte2int(tag.startTagChunk.name);
-			String tagNameTmp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(tagNameIndex);
-			if(tagName.equals(tagNameTmp)){
-				for(AttributeData attrData : tag.startTagChunk.attrList){
-					String attrName = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.name);
-					if("name".equals(attrName)){
-						String value = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.valueString);
-						if(name.equals(value)){
-							//ÕÒµ½Ö¸¶¨µÄtag¿ªÊ¼É¾³ý
-							int size = Utils.byte2int(tag.endTagChunk.size);
-							int delStart = tag.startTagChunk.offset;
-							int delSize = (tag.endTagChunk.offset - tag.startTagChunk.offset) + size;
-							ParserChunkUtils.xmlStruct.byteSrc = Utils.removeByte(ParserChunkUtils.xmlStruct.byteSrc, delStart, delSize);
-							
-							modifyFileSize();
-							return;
+		try{
+			ParserChunkUtils.parserXml();
+			for(TagChunk tag : ParserChunkUtils.xmlStruct.tagChunkList){
+				int tagNameIndex = Utils.byte2int(tag.startTagChunk.name);
+				String tagNameTmp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(tagNameIndex);
+				if(tagName.equals(tagNameTmp)){
+					for(AttributeData attrData : tag.startTagChunk.attrList){
+						String attrName = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.name);
+						if("name".equals(attrName)){
+							String value = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.valueString);
+							if(name.equals(value)){
+								//ï¿½Òµï¿½Ö¸ï¿½ï¿½ï¿½ï¿½tagï¿½ï¿½Ê¼É¾ï¿½ï¿½
+								int size = Utils.byte2int(tag.endTagChunk.size);
+								int delStart = tag.startTagChunk.offset;
+								int delSize = (tag.endTagChunk.offset - tag.startTagChunk.offset) + size;
+								ParserChunkUtils.xmlStruct.byteSrc = Utils.removeByte(ParserChunkUtils.xmlStruct.byteSrc, delStart, delSize);
+
+								modifyFileSize();
+								return;
+							}
 						}
 					}
 				}
 			}
+		}catch (IOException e){
+			System.out.println("parse xml err:"+e.toString());
 		}
 	}
 	
 	/**
-	 * Ìí¼Ó±êÇ©ÄÚÈÝ 
+	 * ï¿½ï¿½Ó±ï¿½Ç©ï¿½ï¿½ï¿½ï¿½ 
 	 */
 	public static void addTag(String insertXml){
-		ParserChunkUtils.parserXml();
 		try {
-	        XmlPullParserFactory pullParserFactory = XmlPullParserFactory.newInstance();  
+			ParserChunkUtils.parserXml();
+	        XmlPullParserFactory pullParserFactory = XmlPullParserFactory.newInstance();
 	        XmlPullParser pullParser = pullParserFactory.newPullParser();  
 	        pullParser.setInput(new FileInputStream(insertXml), "UTF-8");  
 	        int event = pullParser.getEventType();  
-	        // ÈôÎª½âÎöµ½Ä©Î²  
-	        while (event != XmlPullParser.END_DOCUMENT){ // ÎÄµµ½áÊø 
-	            // ½ÚµãÃû³Æ  
+	        // ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä©Î²  
+	        while (event != XmlPullParser.END_DOCUMENT){ // ï¿½Äµï¿½ï¿½ï¿½ï¿½ï¿½ 
+	            // ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½  
 	            switch (event) {  
 	            
-	                case XmlPullParser.START_DOCUMENT: // ÎÄµµ¿ªÊ¼  
+	                case XmlPullParser.START_DOCUMENT: // ï¿½Äµï¿½ï¿½ï¿½Ê¼  
 	                    break;  
 	                    
-	                case XmlPullParser.START_TAG: // ±êÇ©¿ªÊ¼ 
+	                case XmlPullParser.START_TAG: // ï¿½ï¿½Ç©ï¿½ï¿½Ê¼ 
 	                	String tagName = pullParser.getName();
 	                	int name = getStrIndex(tagName);
 	                	int attCount = pullParser.getAttributeCount();
 	                	byte[] attribute = new byte[20*attCount];
 	                	for(int i=0;i<pullParser.getAttributeCount();i++){
 	                		int attruri = getStrIndex(prefixStr);
-	                		//ÕâÀïÐèÒª¶ÔÊôÐÔÃû×ö·ÖÀë
+	                		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	                		String attrName = pullParser.getAttributeName(i);
 	                		String[] strAry = attrName.split(":");
 	                		int[] type = getAttrType(pullParser.getAttributeValue(i));
@@ -96,7 +100,7 @@ public class XmlEditor {
 	                	}
 	                	
 	                	StartTagChunk startChunk = StartTagChunk.createChunk(name, attCount, -1, attribute);
-	                	//¹¹ÔìÒ»¸öÐÂµÄchunkÖ®ºó£¬¿ªÊ¼Ð´Èë
+	                	//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Âµï¿½chunkÖ®ï¿½ó£¬¿ï¿½Ê¼Ð´ï¿½ï¿½
 	                	if(isNotAppTag(tagName)){
 	            			ParserChunkUtils.xmlStruct.byteSrc = Utils.insertByte(ParserChunkUtils.xmlStruct.byteSrc, subTagChunkOffsets, startChunk.getChunkByte());
 	            			subTagChunkOffsets += startChunk.getChunkByte().length;
@@ -106,7 +110,7 @@ public class XmlEditor {
 	                	}
 	                    break;  
 	                    
-	                case XmlPullParser.END_TAG: // ±êÇ©½áÊø  
+	                case XmlPullParser.END_TAG: // ï¿½ï¿½Ç©ï¿½ï¿½ï¿½ï¿½  
 	                	tagName = pullParser.getName();
 	                	name = getStrIndex(tagName);
 	                	EndTagChunk endChunk = EndTagChunk.createChunk(name);
@@ -120,8 +124,8 @@ public class XmlEditor {
 	                    break;  
 	                    
 	            }
-	            event = pullParser.next(); // ÏÂÒ»¸ö±êÇ©  
-	        }  
+	            event = pullParser.next(); // ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ç©  
+	        }
 		} catch (XmlPullParserException e) {
 			System.out.println("parse xml err:"+e.toString());
 		} catch (IOException e){
@@ -135,202 +139,218 @@ public class XmlEditor {
 	}
 	
 	/**
-	 * É¾³ýÊôÐÔ
+	 * É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	 * @param tag
 	 * @param tagName
 	 * @param attrName
 	 */
 	public static void removeAttr(String tag, String tagName, String attrName){
-		ParserChunkUtils.parserXml();
-		for(StartTagChunk chunk : ParserChunkUtils.xmlStruct.startTagChunkList){
-			int tagNameIndex = Utils.byte2int(chunk.name);
-			String tagNameTmp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(tagNameIndex);
-			
-			if(tag.equals(tagNameTmp)){
-				
-				//Èç¹ûÊÇapplication£¬manifest±êÇ©Ö±½Ó´¦Àí¾ÍºÃ
-				if(tag.equals("application") || tag.equals("manifest")){
-					for(AttributeData data : chunk.attrList){
-						String attrNameTemp1 = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(data.name);
-						if(attrName.equals(attrNameTemp1)){
-							//Èç¹ûÕÒµ½¶ÔÓ¦µÄ±êÇ©£¬·¢ÏÖÖ»ÓÐÒ»¸öÊôÐÔÖµ£¬²¢ÇÒÉ¾³ý³É¹¦£¬Í¬Ê±»¹µÃ°ÑÕâ¸ö±êÇ©¸øÉ¾³ýÁË
-							if(chunk.attrList.size() == 1){
-								removeTag(tag, tagName);
-								return ;
+		try{
+			ParserChunkUtils.parserXml();
+			for(StartTagChunk chunk : ParserChunkUtils.xmlStruct.startTagChunkList){
+				int tagNameIndex = Utils.byte2int(chunk.name);
+				String tagNameTmp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(tagNameIndex);
+
+				if(tag.equals(tagNameTmp)){
+
+					//ï¿½ï¿½ï¿½ï¿½ï¿½applicationï¿½ï¿½manifestï¿½ï¿½Ç©Ö±ï¿½Ó´ï¿½ï¿½ï¿½Íºï¿½
+					if(tag.equals("application") || tag.equals("manifest")){
+						for(AttributeData data : chunk.attrList){
+							String attrNameTemp1 = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(data.name);
+							if(attrName.equals(attrNameTemp1)){
+								//ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½Ó¦ï¿½Ä±ï¿½Ç©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½Í¬Ê±ï¿½ï¿½ï¿½Ã°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç©ï¿½ï¿½É¾ï¿½ï¿½ï¿½ï¿½
+								if(chunk.attrList.size() == 1){
+									removeTag(tag, tagName);
+									return ;
+								}
+								//ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Ä¶ï¿½Ó¦ï¿½ï¿½tag chunkï¿½ï¿½ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½Ð¡
+								int countStart = chunk.offset + 28;
+								byte[] modifyByte = Utils.int2Byte(chunk.attrList.size()-1);
+								ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByte, countStart);
+
+								//ï¿½Þ¸ï¿½chunkï¿½Ä´ï¿½Ð¡
+								int chunkSizeStart = chunk.offset + 4;
+								int chunkSize = Utils.byte2int(chunk.size);
+								byte[] modifyByteSize = Utils.int2Byte(chunkSize-20);//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½20ï¿½ï¿½ï¿½Ö½ï¿½
+								ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByteSize, chunkSizeStart);
+
+								//É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+								int delStart = data.offset;
+								int delSize = data.getLen();
+								ParserChunkUtils.xmlStruct.byteSrc = Utils.removeByte(ParserChunkUtils.xmlStruct.byteSrc, delStart, delSize);
+
+								modifyFileSize();
+								return;
 							}
-							//»¹µÃÐÞ¸Ä¶ÔÓ¦µÄtag chunkÖÐÊôÐÔ¸ö¸öÊýºÍ´óÐ¡
-							int countStart = chunk.offset + 28;
-							byte[] modifyByte = Utils.int2Byte(chunk.attrList.size()-1);
-							ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByte, countStart);
-							
-							//ÐÞ¸ÄchunkµÄ´óÐ¡
-							int chunkSizeStart = chunk.offset + 4;
-							int chunkSize = Utils.byte2int(chunk.size);
-							byte[] modifyByteSize = Utils.int2Byte(chunkSize-20);//Ò»¸öÊôÐÔ¿éÊÇ20¸ö×Ö½Ú
-							ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByteSize, chunkSizeStart);
-							
-							//É¾³ýÊôÐÔÄÚÈÝ
-							int delStart = data.offset;
-							int delSize = data.getLen();
-							ParserChunkUtils.xmlStruct.byteSrc = Utils.removeByte(ParserChunkUtils.xmlStruct.byteSrc, delStart, delSize);
-							
-							modifyFileSize();
-							return;
 						}
 					}
-				}
-				
-				//·ñÔòÐèÒªÍ¨¹ýnameÕÒµ½Ö¸¶¨µÄtag
-				for(AttributeData attrData : chunk.attrList){
-					String attrNameTemp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.name);
-					if("name".equals(attrNameTemp)){//µÃÏÈÕÒµ½tag¶ÔÓ¦µÄÎ¨Ò»Ãû³Æ
-						String value = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.valueString);
-						if(tagName.equals(value)){
-							for(AttributeData data : chunk.attrList){
-								String attrNameTemp1 = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(data.name);
-								if(attrName.equals(attrNameTemp1)){
-									
-									//Èç¹ûÕÒµ½¶ÔÓ¦µÄ±êÇ©£¬·¢ÏÖÖ»ÓÐÒ»¸öÊôÐÔÖµ£¬²¢ÇÒÉ¾³ý³É¹¦£¬Í¬Ê±»¹µÃ°ÑÕâ¸ö±êÇ©¸øÉ¾³ýÁË
-									if(chunk.attrList.size() == 1){
-										removeTag(tag, tagName);
+
+					//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÍ¨ï¿½ï¿½nameï¿½Òµï¿½Ö¸ï¿½ï¿½ï¿½ï¿½tag
+					for(AttributeData attrData : chunk.attrList){
+						String attrNameTemp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.name);
+						if("name".equals(attrNameTemp)){//ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½tagï¿½ï¿½Ó¦ï¿½ï¿½Î¨Ò»ï¿½ï¿½ï¿½ï¿½
+							String value = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.valueString);
+							if(tagName.equals(value)){
+								for(AttributeData data : chunk.attrList){
+									String attrNameTemp1 = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(data.name);
+									if(attrName.equals(attrNameTemp1)){
+
+										//ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½Ó¦ï¿½Ä±ï¿½Ç©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½Í¬Ê±ï¿½ï¿½ï¿½Ã°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç©ï¿½ï¿½É¾ï¿½ï¿½ï¿½ï¿½
+										if(chunk.attrList.size() == 1){
+											removeTag(tag, tagName);
+											return ;
+										}
+
+										//ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Ä¶ï¿½Ó¦ï¿½ï¿½tag chunkï¿½ï¿½ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½Ð¡
+										int countStart = chunk.offset + 28;
+										byte[] modifyByte = Utils.int2Byte(chunk.attrList.size()-1);
+										ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByte, countStart);
+
+										//ï¿½Þ¸ï¿½chunkï¿½Ä´ï¿½Ð¡
+										int chunkSizeStart = chunk.offset + 4;
+										int chunkSize = Utils.byte2int(chunk.size);
+										byte[] modifyByteSize = Utils.int2Byte(chunkSize-20);
+										ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByteSize, chunkSizeStart);
+
+										//É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+										int delStart = data.offset;
+										int delSize = data.getLen();
+										ParserChunkUtils.xmlStruct.byteSrc = Utils.removeByte(ParserChunkUtils.xmlStruct.byteSrc, delStart, delSize);
+
+										modifyFileSize();
 										return ;
+
 									}
-									
-									//»¹µÃÐÞ¸Ä¶ÔÓ¦µÄtag chunkÖÐÊôÐÔ¸ö¸öÊýºÍ´óÐ¡
-									int countStart = chunk.offset + 28;
-									byte[] modifyByte = Utils.int2Byte(chunk.attrList.size()-1);
-									ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByte, countStart);
-									
-									//ÐÞ¸ÄchunkµÄ´óÐ¡
-									int chunkSizeStart = chunk.offset + 4;
-									int chunkSize = Utils.byte2int(chunk.size);
-									byte[] modifyByteSize = Utils.int2Byte(chunkSize-20);
-									ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByteSize, chunkSizeStart);
-									
-									//É¾³ýÊôÐÔÄÚÈÝ
-									int delStart = data.offset;
-									int delSize = data.getLen();
-									ParserChunkUtils.xmlStruct.byteSrc = Utils.removeByte(ParserChunkUtils.xmlStruct.byteSrc, delStart, delSize);
-									
-									modifyFileSize();
-									return ;
-									
 								}
 							}
 						}
 					}
 				}
 			}
+		}catch (IOException e){
+			System.out.println("parse xml err:"+e.toString());
 		}
 	}
 	
 	/**
-	 * ¸ü¸ÄÊôÐÔÖµ
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 	 * @param tag
 	 * @param tagName
 	 * @param attrName
 	 * @param attrValue
 	 */
 	public static void modifyAttr(String tag, String tagName, String attrName, String attrValue){
-		ParserChunkUtils.parserXml();
-		XmlEditor.removeAttr(tag, tagName, attrName);
-		ParserChunkUtils.parserXml();
-		XmlEditor.addAttr(tag, tagName, attrName, attrValue);
+		try{
+			ParserChunkUtils.parserXml();
+			XmlEditor.removeAttr(tag, tagName, attrName);
+			ParserChunkUtils.parserXml();
+			XmlEditor.addAttr(tag, tagName, attrName, attrValue);
+
+		}catch (IOException e){
+			System.out.println("parse xml err:"+e.toString());
+		}
 	}
 	
 	/**
-	 * Ìí¼ÓÊôÐÔÖµ
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 	 * @param tag
 	 * @param tagName
 	 * @param attrName
 	 * @param attrValue
 	 */
 	public static void addAttr(String tag, String tagName, String attrName, String attrValue){
-		ParserChunkUtils.parserXml();
-		//¹¹ÔìÒ»¸öÊôÐÔ³öÀ´
-		int[] type = getAttrType(attrValue);
-		int attrname = getStrIndex(attrName);
-		int attrvalue = getStrIndex(attrValue);
-		int attruri = getStrIndex(prefixStr);;
-		int attrtype = type[0];//ÊôÐÔÀàÐÍ
-		int attrdata = type[1];//ÊôÐÔÖµ£¬ÊÇintÀàÐÍ
-		
-		AttributeData data = AttributeData.createAttribute(attruri, attrname, attrvalue, attrtype, attrdata);
-		
-		for(StartTagChunk chunk : ParserChunkUtils.xmlStruct.startTagChunkList){
-			
-			int tagNameIndex = Utils.byte2int(chunk.name);
-			String tagNameTmp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(tagNameIndex);
-			if(tag.equals(tagNameTmp)){
-				
-				//Èç¹ûÊÇapplication£¬manifest±êÇ©Ö±½Ó´¦Àí¾ÍºÃ
-				if(tag.equals("application") || tag.equals("manifest")){
-					//»¹µÃÐÞ¸Ä¶ÔÓ¦µÄtag chunkÖÐÊôÐÔ¸ö¸öÊýºÍ´óÐ¡
-					int countStart = chunk.offset + 28;
-					byte[] modifyByte = Utils.int2Byte(chunk.attrList.size()+1);
-					ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByte, countStart);
-					
-					//ÐÞ¸ÄchunkµÄ´óÐ¡
-					int chunkSizeStart = chunk.offset + 4;
-					int chunkSize = Utils.byte2int(chunk.size);
-					byte[] modifyByteSize = Utils.int2Byte(chunkSize+20);
-					ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByteSize, chunkSizeStart);
-					
-					//Ìí¼ÓÊôÐÔÄÚÈÝµ½Ô­À´µÄchunkÉÏ
-					ParserChunkUtils.xmlStruct.byteSrc = Utils.insertByte(ParserChunkUtils.xmlStruct.byteSrc, chunk.offset + chunkSize, data.getByte());
-					
-					modifStringChunk();
-					
-					modifyFileSize();
-					
-					return;
-				}
-				
-				for(AttributeData attrData : chunk.attrList){
-					String attrNameTemp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.name);
-					if("name".equals(attrNameTemp)){//µÃÏÈÕÒµ½tag¶ÔÓ¦µÄÎ¨Ò»Ãû³Æ
-						
-						//»¹µÃÐÞ¸Ä¶ÔÓ¦µÄtag chunkÖÐÊôÐÔ¸ö¸öÊýºÍ´óÐ¡
+		try{
+			ParserChunkUtils.parserXml();
+			//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ô³ï¿½ï¿½ï¿½
+			int[] type = getAttrType(attrValue);
+			int attrname = getStrIndex(attrName);
+			int attrvalue = getStrIndex(attrValue);
+			int attruri = getStrIndex(prefixStr);;
+			int attrtype = type[0];//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			int attrdata = type[1];//ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½intï¿½ï¿½ï¿½ï¿½
+
+			AttributeData data = AttributeData.createAttribute(attruri, attrname, attrvalue, attrtype, attrdata);
+
+			for(StartTagChunk chunk : ParserChunkUtils.xmlStruct.startTagChunkList){
+
+				int tagNameIndex = Utils.byte2int(chunk.name);
+				String tagNameTmp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(tagNameIndex);
+				if(tag.equals(tagNameTmp)){
+
+					//ï¿½ï¿½ï¿½ï¿½ï¿½applicationï¿½ï¿½manifestï¿½ï¿½Ç©Ö±ï¿½Ó´ï¿½ï¿½ï¿½Íºï¿½
+					if(tag.equals("application") || tag.equals("manifest")){
+						//ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Ä¶ï¿½Ó¦ï¿½ï¿½tag chunkï¿½ï¿½ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½Ð¡
 						int countStart = chunk.offset + 28;
 						byte[] modifyByte = Utils.int2Byte(chunk.attrList.size()+1);
 						ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByte, countStart);
-						
-						//ÐÞ¸ÄchunkµÄ´óÐ¡
+
+						//ï¿½Þ¸ï¿½chunkï¿½Ä´ï¿½Ð¡
 						int chunkSizeStart = chunk.offset + 4;
 						int chunkSize = Utils.byte2int(chunk.size);
 						byte[] modifyByteSize = Utils.int2Byte(chunkSize+20);
 						ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByteSize, chunkSizeStart);
-						
-						//Ìí¼ÓÊôÐÔÄÚÈÝµ½Ô­À´µÄchunkÉÏ
+
+						//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½Ô­ï¿½ï¿½ï¿½ï¿½chunkï¿½ï¿½
 						ParserChunkUtils.xmlStruct.byteSrc = Utils.insertByte(ParserChunkUtils.xmlStruct.byteSrc, chunk.offset + chunkSize, data.getByte());
-						
+
 						modifStringChunk();
-						
+
 						modifyFileSize();
-						
+
 						return;
+					}
+
+					for(AttributeData attrData : chunk.attrList){
+						String attrNameTemp = ParserChunkUtils.xmlStruct.stringChunk.stringContentList.get(attrData.name);
+						if("name".equals(attrNameTemp)){//ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½tagï¿½ï¿½Ó¦ï¿½ï¿½Î¨Ò»ï¿½ï¿½ï¿½ï¿½
+
+							//ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Ä¶ï¿½Ó¦ï¿½ï¿½tag chunkï¿½ï¿½ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½Ð¡
+							int countStart = chunk.offset + 28;
+							byte[] modifyByte = Utils.int2Byte(chunk.attrList.size()+1);
+							ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByte, countStart);
+
+							//ï¿½Þ¸ï¿½chunkï¿½Ä´ï¿½Ð¡
+							int chunkSizeStart = chunk.offset + 4;
+							int chunkSize = Utils.byte2int(chunk.size);
+							byte[] modifyByteSize = Utils.int2Byte(chunkSize+20);
+							ParserChunkUtils.xmlStruct.byteSrc = Utils.replaceBytes(ParserChunkUtils.xmlStruct.byteSrc, modifyByteSize, chunkSizeStart);
+
+							//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½Ô­ï¿½ï¿½ï¿½ï¿½chunkï¿½ï¿½
+							ParserChunkUtils.xmlStruct.byteSrc = Utils.insertByte(ParserChunkUtils.xmlStruct.byteSrc, chunk.offset + chunkSize, data.getByte());
+
+							modifStringChunk();
+
+							modifyFileSize();
+
+							return;
+						}
 					}
 				}
 			}
+		}catch (IOException e){
+			System.out.println("parse xml err:"+e.toString());
 		}
-		
 	}
 	
 	/**
-	 * ÖØÐÂ²åÈëString ChunkÄÚÈÝ¿é
+	 * ï¿½ï¿½ï¿½Â²ï¿½ï¿½ï¿½String Chunkï¿½ï¿½ï¿½Ý¿ï¿½
 	 */
 	private static void modifStringChunk(){
-		//Ð´ÈëStartTagChunk chunkÖ®Ç°£¬ÒòÎªÓÐ×Ö·û´®ÐÅÏ¢Ôö¼Ó£¬ËùÒÔµÃÐÞ¸Ä×Ö·û´®ÄÚÈÝ
-		StringChunk strChunk = ParserChunkUtils.xmlStruct.stringChunk;
-		byte[] newStrChunkB = strChunk.getByte(ParserChunkUtils.xmlStruct.stringChunk.stringContentList);
-		//É¾³ýÔ­Ê¼String Chunk
-		ParserChunkUtils.xmlStruct.byteSrc = Utils.removeByte(ParserChunkUtils.xmlStruct.byteSrc, ParserChunkUtils.stringChunkOffset, Utils.byte2int(strChunk.size));
-		//²åÈëÐÂµÄString Chunk
-		ParserChunkUtils.xmlStruct.byteSrc = Utils.insertByte(ParserChunkUtils.xmlStruct.byteSrc, ParserChunkUtils.stringChunkOffset, newStrChunkB);
+		try{
+			//Ð´ï¿½ï¿½StartTagChunk chunkÖ®Ç°ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ï¿½ï¿½Ôµï¿½ï¿½Þ¸ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			StringChunk strChunk = ParserChunkUtils.xmlStruct.stringChunk;
+			byte[] newStrChunkB = strChunk.getByte(ParserChunkUtils.xmlStruct.stringChunk.stringContentList);
+			//É¾ï¿½ï¿½Ô­Ê¼String Chunk
+			ParserChunkUtils.xmlStruct.byteSrc = Utils.removeByte(ParserChunkUtils.xmlStruct.byteSrc, ParserChunkUtils.stringChunkOffset, Utils.byte2int(strChunk.size));
+			//ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½String Chunk
+			ParserChunkUtils.xmlStruct.byteSrc = Utils.insertByte(ParserChunkUtils.xmlStruct.byteSrc, ParserChunkUtils.stringChunkOffset, newStrChunkB);
+		}catch (IOException e){
+			System.out.println("parse xml err:"+e.toString());
+		}
 	}
 	
 	/**
-	 * ÐÞ¸ÄÎÄ¼þ×îÖÕµÄ´óÐ¡
+	 * ï¿½Þ¸ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ÕµÄ´ï¿½Ð¡
 	 */
 	public static void modifyFileSize(){
 		byte[] newFileSize = Utils.int2Byte(ParserChunkUtils.xmlStruct.byteSrc.length);
@@ -338,7 +358,7 @@ public class XmlEditor {
 	}
 	
 	/**
-	 * »ñÈ¡×Ö·û´®µÄË÷ÒýÖµ£¬Èç¹û×Ö·û´®´æÔÚÖ±½Ó·µ»Ø£¬²»´æÔÚ¾Í·Åµ½Ä©Î²·µ»Ø¶ÔÓ¦µÄË÷ÒýÖµ
+	 * ï¿½ï¿½È¡ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó·ï¿½ï¿½Ø£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¾Í·Åµï¿½Ä©Î²ï¿½ï¿½ï¿½Ø¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 	 * @param str
 	 * @return
 	 */
@@ -356,7 +376,7 @@ public class XmlEditor {
 	}
 	
 	/**
-	 * ÅÐ¶ÏÊÇ·ñÊÇapplicationÍâ²¿µÄ±êÇ©£¬applicationµÄÄÚ²¿ºÍÍâ²¿±êÇ©ÐèÒªÇø·Ö¶Ô´ý
+	 * ï¿½Ð¶ï¿½ï¿½Ç·ï¿½ï¿½ï¿½applicationï¿½â²¿ï¿½Ä±ï¿½Ç©ï¿½ï¿½applicationï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½â²¿ï¿½ï¿½Ç©ï¿½ï¿½Òªï¿½ï¿½ï¿½Ö¶Ô´ï¿½
 	 * @param tagName
 	 * @return
 	 */
@@ -370,7 +390,7 @@ public class XmlEditor {
 	}
 	
 	/**
-	 * »ñÈ¡ÊôÐÔ¶ÔÓ¦ÀàÐÍÖµ
+	 * ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ô¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Öµ
 	 * @param tagValue
 	 * @return
 	 */
@@ -386,7 +406,7 @@ public class XmlEditor {
 				result[1] = 0;
 			}
 		}else if(tagValue.equals("singleTask") || tagValue.equals("standard") 
-				|| tagValue.equals("singleTop") || tagValue.equals("singleInstance")){//Æô¶¯Ä£Ê½intÀàÐÍ
+				|| tagValue.equals("singleTop") || tagValue.equals("singleInstance")){//ï¿½ï¿½ï¿½ï¿½Ä£Ê½intï¿½ï¿½ï¿½ï¿½
 			result[0] = result[0] | AttributeType.ATTR_FIRSTINT;
 			if(tagValue.equals("standard")){
 				result[1] = 0;
@@ -400,19 +420,19 @@ public class XmlEditor {
 		}else if(tagValue.equals("minSdkVersion") || tagValue.equals("versionCode")){
 			result[0] = result[0] | AttributeType.ATTR_FIRSTINT;
 			result[1] = Integer.valueOf(tagValue);
-		}else if(tagValue.startsWith("@")){//ÒýÓÃ
+		}else if(tagValue.startsWith("@")){//ï¿½ï¿½ï¿½ï¿½
 			result[0] = result[0] | AttributeType.ATTR_REFERENCE;
 			result[1] = 0x7F000000;
 		}else if(tagValue.startsWith("#")){//É«Öµ
 			result[0] = result[0] | AttributeType.ATTR_ARGB4;
 			result[1] = 0xFFFFFFFF;
-		}else{//×Ö·û´®
+		}else{//ï¿½Ö·ï¿½ï¿½ï¿½
 			result[0] = result[0] | AttributeType.ATTR_STRING;
 			result[1] = getStrIndex(tagValue);
 		}
 		
 		result[0] = result[0] | 0x08000000;
-		result[0] = Utils.byte2int(Utils.reverseBytes(Utils.int2Byte(result[0])));//×Ö½ÚÐèÒª·­×ªÒ»´Î
+		result[0] = Utils.byte2int(Utils.reverseBytes(Utils.int2Byte(result[0])));//ï¿½Ö½ï¿½ï¿½ï¿½Òªï¿½ï¿½×ªÒ»ï¿½ï¿½
 		
 		return result;
 	}
